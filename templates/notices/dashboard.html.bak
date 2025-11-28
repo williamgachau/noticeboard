@@ -1,0 +1,686 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script>
+    function toggleClassManagement() {
+        const section = document.getElementById('class-management-section');
+        if (section) {
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+</script>
+<style>
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #eef2f7;
+    }
+
+    .header-main h1 {
+        margin: 0;
+        color: #2d3748;
+        font-size: 2rem;
+    }
+
+    .class-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: #e2e8f0;
+        border-radius: 20px;
+        color: #4a5568;
+        margin-left: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .notices-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .notice-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .notice-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .notice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .notice-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #2d3748;
+    }
+
+    .notice-content {
+        color: #4a5568;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    .notice-meta {
+        display: flex;
+        gap: 1rem;
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .notice-meta i {
+        margin-right: 0.5rem;
+    }
+
+    /* Admin Panel Styles */
+    .admin-panel {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .admin-section h2 {
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        font-size: 1.75rem;
+    }
+
+    .user-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .class-card {
+        background: #f7fafc;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .class-card h3 {
+        color: #2d3748;
+        margin: 0 0 1rem 0;
+        font-size: 1.25rem;
+    }
+
+    .commander-form {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .commander-select {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+
+    .btn-assign {
+        padding: 0.5rem 1rem;
+        background: #4299e1;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-assign:hover {
+        background: #3182ce;
+    }
+
+    .user-table-wrapper {
+        overflow-x: auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .user-table th,
+    .user-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .user-table th {
+        background: #f7fafc;
+        font-weight: 600;
+        color: #4a5568;
+    }
+
+    .role-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .role-class_commander {
+        background: #ebf8ff;
+        color: #2b6cb0;
+    }
+
+    .role-student {
+        background: #f0fff4;
+        color: #2f855a;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.875rem;
+    }
+
+    .status-assigned {
+        background: #c6f6d5;
+        color: #2f855a;
+    }
+
+    .status-unassigned {
+        background: #fed7d7;
+        color: #c53030;
+    }
+
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .badge-public {
+        background: #c6f6d5;
+        color: #2f855a;
+    }
+
+    .badge-class {
+        background: #bee3f8;
+        color: #2b6cb0;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: #4299e1;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #3182ce;
+    }
+
+    .btn-edit {
+        background: #edf2f7;
+        color: #4a5568;
+    }
+
+    .btn-delete {
+        background: #fed7d7;
+        color: #c53030;
+    }
+
+    .btn-edit:hover, .btn-delete:hover {
+        filter: brightness(95%);
+    }
+
+    .notice-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    /* Class Commander Panel Styles */
+    .commander-panel {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .class-management h3 {
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+    }
+
+    .add-student-form {
+        background: #f7fafc;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .add-student-form h4 {
+        color: #4a5568;
+        margin-bottom: 1rem;
+    }
+
+    .student-form {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .student-form select {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+
+    .student-list {
+        margin-top: 2rem;
+    }
+
+    .student-list h4 {
+        color: #4a5568;
+        margin-bottom: 1rem;
+    }
+
+    .student-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        list-style: none;
+        padding: 0;
+    }
+
+    .student-card {
+        background: #f7fafc;
+        padding: 1rem;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: transform 0.2s ease;
+    }
+
+    .student-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .student-card i {
+        color: #4299e1;
+    }
+
+    .no-students {
+        color: #718096;
+        text-align: center;
+        padding: 2rem;
+        background: #f7fafc;
+        border-radius: 6px;
+    }
+
+    .messages {
+        margin-bottom: 2rem;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        animation: fadeOut 0.5s ease 3s forwards;
+    }
+
+    .alert-success {
+        background: #c6f6d5;
+        color: #2f855a;
+        border-left: 4px solid #48bb78;
+    }
+
+    .alert-error {
+        background: #fed7d7;
+        color: #c53030;
+        border-left: 4px solid #f56565;
+    }
+
+    .no-notices {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem;
+        background: #f7fafc;
+        border-radius: 10px;
+        color: #718096;
+    }
+
+    .no-notices i {
+        margin-bottom: 1rem;
+    }
+
+    @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .notices-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div class="header-main">
+            <h1>Notice Board</h1>
+            <p class="user-info" style="margin:0.5rem 0 0 0; color:#4a5568;">
+                Signed in as <strong>{{ user.get_full_name|default:user.username }}</strong>
+                &nbsp;•&nbsp;
+                <span class="role-label">{{ user.get_role_display }}</span>
+                {% if user_class %}
+                    &nbsp;•&nbsp;
+                    <span class="class-badge">Class: {{ user_class.name }}</span>
+                {% endif %}
+            </p>
+        </div>
+        {% if user_role != 'STUDENT' %}
+        <div class="actions" style="display: flex; gap: 1rem;">
+            <a href="{% url 'create_notice' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create New Notice
+            </a>
+            <a href="{% url 'logout' %}" class="btn" style="background-color: #EDF2F7; color: #4A5568;" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+            <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
+                {% csrf_token %}
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if user_role == 'ADMIN' %}
+    <div class="admin-panel">
+        <div class="admin-section user-management">
+            <h2>User Management</h2>
+            <div class="user-grid">
+                {% for class in all_classes %}
+                <div class="class-card">
+                    <h3>{{ class.name }}</h3>
+                    <form method="post" action="{% url 'assign_commander' %}" class="commander-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="class_id" value="{{ class.id }}">
+                        <select name="commander_id" class="commander-select">
+                            <option value="">-- Select Commander --</option>
+                            {% for commander in class_commanders %}
+                            <option value="{{ commander.id }}" {% if class.class_commander == commander %}selected{% endif %}>
+                                {{ commander.get_full_name|default:commander.username }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-assign">
+                            <i class="fas fa-user-shield"></i> Assign
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="users-list">
+                <h3>All Users</h3>
+                <div class="user-table-wrapper">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_item in all_users %}
+                            <tr>
+                                <td>{{ user_item.username }}</td>
+                                <td>{{ user_item.get_full_name|default:"-" }}</td>
+                                <td><span class="role-badge role-{{ user_item.role|lower }}">{{ user_item.role }}</span></td>
+                                <td>
+                                    {% if user_item.role == 'CLASS_COMMANDER' %}
+                                        {% if user_item.commanded_class %}
+                                            <span class="status-badge status-assigned">
+                                                Commanding {{ user_item.commanded_class.name }}
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge status-unassigned">Unassigned</span>
+                                        {% endif %}
+                                    {% elif user_item.role == 'STUDENT' %}
+                                        {% if user_item.student.class_group %}
+                                            <span class="status-badge status-assigned">
+                                                In {{ user_item.student.class_group.name }}
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge status-unassigned">No Class</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="status-badge">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if messages %}
+    {% if user_role == 'ADMIN' %}
+    <div class="admin-assignments" style="margin: 1.5rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+        <h3 style="margin-top:0;">Assign Class Commanders</h3>
+        <p style="color:#4a5568;">Assign a single commander to each class. Only users with the <strong>CLASS_COMMANDER</strong> role are selectable.</p>
+        {% for cls in classes %}
+        <form method="post" action="{% url 'assign_commander' %}" style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem;">
+            {% csrf_token %}
+            <input type="hidden" name="class_id" value="{{ cls.pk }}">
+            <div style="flex:1;">
+                <strong>{{ cls.name }}</strong>
+            </div>
+            <div>
+                <select name="commander_id">
+                    <option value="">-- Unassign --</option>
+                    {% for c in commanders %}
+                        <option value="{{ c.pk }}" {% if cls.class_commander and cls.class_commander.pk == c.pk %}selected{% endif %}>{{ c.get_full_name|default:c.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Assign</button>
+            </div>
+        </form>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {% if user_role == 'CLASS_COMMANDER' %}
+    <div class="commander-panel">
+        {% if commanded_class %}
+                <div class="class-management">
+                <h3>Class Management - {{ commanded_class.name }}</h3>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                    <a href="{% url 'register_student' %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Register New Student
+                    </a>
+                </div>
+                <div class="add-student-form">
+                    <h4>Add Existing Student</h4>
+                    <form method="post" action="{% url 'add_student_to_class' %}" class="student-form">
+                        {% csrf_token %}
+                        {{ student_form.student }}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Add Student
+                        </button>
+                    </form>
+                </div>                <div class="student-list">
+                    <h4>Current Students</h4>
+                    {% if class_students %}
+                        <ul class="student-grid">
+                            {% for student in class_students %}
+                            <li class="student-card">
+                                <i class="fas fa-user-graduate"></i>
+                                <span>{{ student.user.get_full_name|default:student.user.username }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="no-students">No students assigned to your class yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="claim-class">
+                <h4 style="margin-top:0;">No class assigned</h4>
+                <p style="color:#4a5568;">You haven't been assigned to command any class yet. You can claim an available class below or contact an administrator.</p>
+                {% if available_classes %}
+                    <form method="post" action="{% url 'claim_class' %}" style="display:flex; gap:0.5rem; align-items:center; margin-top:0.5rem;">
+                        {% csrf_token %}
+                        <select name="class_id" style="padding:0.5rem; border:1px solid #e2e8f0; border-radius:6px;">
+                            <option value="">-- Select an available class --</option>
+                            {% for ac in available_classes %}
+                                <option value="{{ ac.pk }}">{{ ac.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">Claim Class</button>
+                    </form>
+                {% else %}
+                    <p style="color:#c53030; margin-top:0.5rem;">No unassigned classes are available at the moment.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} fade-out">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if user_role == 'CLASS_COMMANDER' %}
+    <div class="commander-panel" style="margin:1rem 0; padding:1rem; background:#f7f9fb; border-radius:8px;">
+        <h3 style="margin-top:0;">Manage Students for your Class</h3>
+        <p style="color:#4a5568;">Add a student to your designated class or view the current list.</p>
+        <form method="post" action="{% url 'commander_register_student' %}" style="display:flex; gap:0.5rem; align-items:center;">
+            {% csrf_token %}
+            <select name="student_user_id">
+                <option value="">-- Select student --</option>
+                {% for s in students %}
+                    <option value="{{ s.pk }}">{{ s.get_full_name|default:s.username }} ({{ s.username }})</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Add to my class</button>
+        </form>
+
+        <h4 style="margin-top:1rem;">Students in {{ user_class }}</h4>
+        <ul>
+            {% for st in assigned_students %}
+                <li>{{ st.user.get_full_name|default:st.user.username }} ({{ st.user.username }})</li>
+            {% empty %}
+                <li>No students assigned yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="notices-grid">
+        {% for notice in notices %}
+        <div class="notice-card">
+            <div class="notice-header">
+                <h2>{{ notice.title }}</h2>
+                {% if notice.is_public %}
+                    <span class="badge badge-public">Public</span>
+                {% else %}
+                    <span class="badge badge-class">Class Only</span>
+                {% endif %}
+            </div>
+            <div class="notice-content">{{ notice.content }}</div>
+            <div class="notice-meta">
+                <div class="author">
+                    <i class="fas fa-user"></i>
+                    {{ notice.author.get_full_name|default:notice.author.username }}
+                </div>
+                <div class="date">
+                    <i class="fas fa-clock"></i>
+                    {{ notice.created_at|date:"F j, Y, g:i a" }}
+                </div>
+            </div>
+            {% if user == notice.author %}
+            <div class="notice-actions">
+                <a href="{% url 'edit_notice' notice.pk %}" class="btn btn-edit">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'delete_notice' notice.pk %}" class="btn btn-delete">
+                    <i class="fas fa-trash"></i> Delete
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="no-notices">
+            <i class="fas fa-inbox fa-3x"></i>
+            <p>No notices available at the moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

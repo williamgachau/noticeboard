@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SITDS Notice Board - National Defence University Kenya</title>
+    
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #003366;      /* Military blue */
+            --secondary-color: #8b0000;    /* Dark red */
+            --accent-color: #ffd700;       /* Gold */
+            --success-color: #1e4620;      /* Military green */
+            --warning-color: #8b4000;      /* Military brown */
+            --info-color: #006d77;         /* Military teal */
+            --light-bg: #f8fafc;           /* Light background */
+            --dark-bg: #1a1a1a;           /* Dark background */
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--light-bg);
+            min-height: 100vh;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .content {
+            min-height: calc(100vh - 60px); /* Account for footer */
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: 1.3;
+            color: var(--primary-color);
+        }
+
+        /* Buttons */
+        .btn {
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #004080;
+            border-color: #004080;
+        }
+
+        /* Cards */
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form Controls */
+        .form-control {
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.25);
+        }
+
+        /* Tables */
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            border: none;
+        }
+
+        /* Alerts */
+        .alert {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #004080;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div style="background:#fff; padding:0.5rem 1rem; border-bottom:1px solid #eef2f7;">
+        <div style="max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between;">
+            <div>
+                <a href="/" style="text-decoration:none; color:var(--primary-color); font-weight:700;">SITDS Notice Board</a>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                {% if request.user.is_authenticated %}
+                    {% load avatar_tags %}
+                    <div class="profile-inline" style="display:flex; align-items:center; gap:0.5rem; position:relative;">
+                        <img id="site-avatar" src="{{ request.user|avatar_url:40 }}" alt="{{ request.user.get_full_name|default:request.user.username }}'s avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">
+                        <div style="color:#2d3748; font-weight:600;">{{ request.user.get_full_name|default:request.user.username }}</div>
+
+                        <!-- Ellipsis menu -->
+                        <div class="avatar-menu" style="position:relative;">
+                            <button id="avatar-menu-button" aria-haspopup="true" aria-expanded="false" title="Profile options" style="background:transparent;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;color:#4a5568;font-size:16px;">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div id="avatar-dropdown" style="display:none; position:absolute; right:0; top:36px; background:#fff; border:1px solid #e6e6e6; box-shadow:0 6px 12px rgba(0,0,0,0.08); border-radius:6px; min-width:160px; z-index:1000;">
+                                <a href="{% url 'profile' %}" class="dropdown-item" style="display:block;padding:8px 12px;color:#2d3748;text-decoration:none;">View profile</a>
+                                <button id="open-upload-btn" class="dropdown-item" style="display:block;width:100%;text-align:left;padding:8px 12px;border:none;background:none;color:#2d3748;cursor:pointer;">Upload / Change photo</button>
+                                {% if request.user.photo %}
+                                    <button id="delete-photo-btn" style="display:block;width:100%;text-align:left;padding:8px 12px;border:none;background:none;color:#e53e3e;cursor:pointer;">Delete photo</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary">Log in</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+</div>
+    {% load static %}
+    {% block extra_js %}
+    <style>
+    /* Simple modal backdrop */
+    #avatar-upload-modal { display:none; position:fixed; inset:0; z-index:1100; align-items:center; justify-content:center; }
+    #avatar-upload-modal .backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.4); }
+    #avatar-upload-modal .dialog { background:#fff; border-radius:8px; padding:16px; max-width:420px; width:90%; box-shadow:0 8px 24px rgba(0,0,0,0.2); position:relative; }
+    #site-toast { position:fixed; right:16px; bottom:16px; background:#111827; color:#fff; padding:10px 14px; border-radius:8px; display:none; z-index:1200; box-shadow:0 6px 18px rgba(0,0,0,0.2); }
+    </style>
+
+    <script>
+    (function(){
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const menuBtn = document.getElementById('avatar-menu-button');
+        const dropdown = document.getElementById('avatar-dropdown');
+        const deleteBtn = document.getElementById('delete-photo-btn');
+
+        if (menuBtn && dropdown) {
+            menuBtn.addEventListener('click', function(e){
+                e.stopPropagation();
+                const isOpen = dropdown.style.display === 'block';
+                dropdown.style.display = isOpen ? 'none' : 'block';
+                menuBtn.setAttribute('aria-expanded', String(!isOpen));
+                if (!isOpen) dropdown.querySelector('a,button').focus();
+            });
+
+            // keyboard toggle
+            menuBtn.addEventListener('keydown', function(e){
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); menuBtn.click(); }
+                if (e.key === 'Escape') { dropdown.style.display='none'; menuBtn.setAttribute('aria-expanded','false'); }
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', function(){
+                if (dropdown.style.display === 'block') {
+                    dropdown.style.display = 'none';
+                    menuBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+
+        // utility to show a small toast
+        function showToast(msg, timeout=3000) {
+            let t = document.getElementById('site-toast');
+            if (!t) return alert(msg);
+            t.textContent = msg;
+            t.style.display = 'block';
+            clearTimeout(t._hideT);
+            t._hideT = setTimeout(function(){ t.style.display='none'; }, timeout);
+        }
+
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                if (!confirm('Delete your profile photo? This cannot be undone.')) return;
+                const url = '{% url "profile_delete" %}';
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                }).then(async function(res){
+                    if (res.ok) {
+                        const avatar = document.getElementById('site-avatar');
+                        if (avatar) avatar.src = '{% static "images/default-avatar.svg" %}';
+                        showToast('Profile photo deleted.');
+                        dropdown.style.display = 'none';
+                        menuBtn.setAttribute('aria-expanded', 'false');
+                    } else {
+                        let data = null;
+                        try { data = await res.json(); } catch(e){}
+                        showToast(data && data.status ? data.status : 'Failed to delete photo.');
+                    }
+                }).catch(function(){
+                    showToast('Network error while deleting photo.');
+                });
+            });
+        }
+
+        // Upload modal handling
+        const openUploadBtn = document.getElementById('open-upload-btn');
+        const modal = document.createElement('div');
+        modal.id = 'avatar-upload-modal';
+        modal.innerHTML = `
+            <div class="backdrop" tabindex="-1"></div>
+            <div class="dialog" role="dialog" aria-modal="true">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                    <h3 style="margin:0;color:#111827;">Upload profile photo</h3>
+                    <button type="button" id="modal-close-btn" aria-label="Close" style="border:none;background:none;padding:8px;cursor:pointer;color:#64748b;font-size:18px;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="avatar-upload-form">
+                    <input id="avatar-file-input" name="photo" type="file" accept="image/*" style="display:block;margin-bottom:12px;" />
+                    <div style="display:flex;gap:8px;justify-content:flex-end;">
+                        <button type="button" id="upload-cancel-btn" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" id="upload-photo-submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        const fileInput = document.getElementById('avatar-file-input');
+        const uploadForm = document.getElementById('avatar-upload-form');
+        const uploadCancel = document.getElementById('upload-cancel-btn');
+
+        function openModal(){
+            modal.style.display = 'flex';
+            // focus the file input
+            setTimeout(()=>{
+                const f = document.getElementById('avatar-file-input');
+                if (f) f.focus();
+            }, 50);
+        }
+        function closeModal(){
+            modal.style.display = 'none';
+        }
+
+        if (openUploadBtn) {
+            openUploadBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); openModal(); dropdown.style.display='none'; menuBtn.setAttribute('aria-expanded','false'); });
+        }
+
+        // cancel handler
+        if (uploadCancel) uploadCancel.addEventListener('click', function(e){ e.preventDefault(); closeModal(); });
+
+        // backdrop click closes
+        modal.addEventListener('click', function(e){ if (e.target.classList && e.target.classList.contains('backdrop')) closeModal(); });
+
+        // Close button handler 
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeModal();
+            });
+        }
+
+        // submit upload via AJAX
+        uploadForm.addEventListener('submit', function(e){
+            e.preventDefault();
+            const f = document.getElementById('avatar-file-input');
+            if (!f || !f.files || f.files.length === 0) { showToast('Please choose a file first.'); return; }
+            
+            const submitBtn = document.getElementById('upload-photo-submit');
+            if (submitBtn) submitBtn.disabled = true;  // Prevent double submit
+            
+            const fd = new FormData();
+            fd.append('photo', f.files[0]);
+
+            const url = '{% url "profile_upload" %}';
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                credentials: 'same-origin',
+                body: fd
+            }).then(async function(res){
+                const data = await (res.json().catch(()=> null));
+                if (res.ok && data && data.status === 'ok') {
+                    const avatar = document.getElementById('site-avatar');
+                    if (avatar && data.url) avatar.src = data.url;
+                    showToast('Profile photo uploaded successfully.');
+                    closeModal();
+                    // Reset form after successful upload
+                    f.value = '';
+                } else {
+                    // Prefer explicit message from server, then form errors
+                    let msg = 'Upload failed.';
+                    if (data) {
+                        if (data.message) msg = data.message;
+                        else if (data.errors) msg = Object.values(data.errors).flat().join(' ');
+                    }
+                    showToast(msg);
+                }
+            }).catch(function(){ 
+                showToast('Network error while uploading. Please check your connection.');
+            }).finally(function(){
+                if (submitBtn) submitBtn.disabled = false;  // Re-enable submit
+            });
+        });
+
+        // Escape key closes modal/menu
+        document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { closeModal(); if (dropdown) { dropdown.style.display='none'; menuBtn.setAttribute('aria-expanded','false'); } } });
+
+        // Add toast container
+        const toast = document.createElement('div'); toast.id = 'site-toast'; document.body.appendChild(toast);
+    })();
+    </script>
+    {% endblock %}
+</body>
+</html>

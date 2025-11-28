@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Create New Notice</h1>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="{{ form.title.id_for_label }}">Title:</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+            <div class="errors">{{ form.title.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.content.id_for_label }}">Content:</label>
+            {{ form.content }}
+            {% if form.content.errors %}
+            <div class="errors">{{ form.content.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.target_class.id_for_label }}">Target Class:</label>
+            {{ form.target_class }}
+            {% if form.target_class.errors %}
+            <div class="errors">{{ form.target_class.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.target_classes.id_for_label }}">Target Classes (multiple):</label>
+            {{ form.target_classes }}
+            {% if form.target_classes.errors %}
+            <div class="errors">{{ form.target_classes.errors }}</div>
+            {% endif %}
+            <small class="help-text">Hold Ctrl/Cmd to select multiple classes.</small>
+        </div>
+
+        <div class="form-group">
+            <label>Target Roles:</label>
+            <div class="roles-list">
+                {{ form.target_roles }}
+            </div>
+            {% if form.target_roles.errors %}
+            <div class="errors">{{ form.target_roles.errors }}</div>
+            {% endif %}
+            <small class="help-text">Select roles to target (leave empty to not target by role).</small>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.is_public.id_for_label }}">Make Public:</label>
+            {{ form.is_public }}
+            {% if form.is_public.errors %}
+            <div class="errors">{{ form.is_public.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.attachment.id_for_label }}">Attachment (Optional):</label>
+            {{ form.attachment }}
+            {% if form.attachment.errors %}
+            <div class="errors">{{ form.attachment.errors }}</div>
+            {% endif %}
+            <small class="help-text">Upload any related files (documents, images, PDFs)</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn">
+                <i class="fas fa-paper-plane"></i> Create Notice
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+    }
+    .form-group input[type="text"],
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    .errors {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+    }
+    .form-actions {
+        margin-top: 1.5rem;
+    }
+    .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: white;
+        text-decoration: none;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    .btn:hover {
+        background-color: #0056b3;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        margin-left: 10px;
+    }
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+    .alert {
+        padding: 10px;
+        margin-bottom: 1rem;
+        border-radius: 4px;
+    }
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}

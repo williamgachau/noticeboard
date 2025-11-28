@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script>
+    function toggleClassManagement() {
+        const section = document.getElementById('class-management-section');
+        if (section) {
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    // Toggle suspension form with confirmation before showing
+    function toggleSuspensionForm(studentId) {
+        const formId = `suspension-form-${studentId}`;
+        const form = document.getElementById(formId);
+        if (!form) return;
+        if (form.style.display === 'none' || form.style.display === '') {
+            if (!confirm('Are you sure you want to suspend this student from creating notices?')) return;
+            form.style.display = 'block';
+        } else {
+            form.style.display = 'none';
+        }
+    }
+</script>
+<style>
+    :root {
+        --primary-color: #003366;    /* Military blue */
+        --secondary-color: #8b0000;  /* Dark red */
+        --accent-color: #ffd700;     /* Gold */
+        --success-color: #1e4620;    /* Dark military green */
+        --warning-color: #8b4000;    /* Military brown */
+        --danger-color: #8b0000;     /* Military red */
+    }
+
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: url('/static/images/subtle-pattern.png') repeat;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-top: 5px solid var(--primary-color);
+    }
+
+    .header-main h1 {
+        margin: 0;
+        color: #2d3748;
+        font-size: 2rem;
+    }
+
+    .notices-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .notice-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .notice-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .commander-panel {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .action-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+        transition: transform 0.2s ease;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        border: 1px solid var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        background: #004080;
+        border-color: #004080;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-assigned {
+        background: var(--success-color);
+        color: white;
+        border: 1px solid #143116;
+    }
+
+    .role-label {
+        background: var(--secondary-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .class-badge {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .student-table-wrapper table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .student-table-wrapper th,
+    .student-table-wrapper td {
+        text-align: left;
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .student-table-wrapper th {
+        background: #f7fafc;
+        font-weight: 600;
+        color: #4a5568;
+    }
+
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div class="header-main">
+            <div class="institution-hierarchy" style="margin-bottom: 1rem;">
+                <p style="margin: 0; color: var(--primary-color); font-size: 0.9rem;">
+                    <i class="fas fa-university"></i> National Defence University-Kenya (NDU-K)
+                </p>
+                <p style="margin: 0.2rem 0 0 1rem; color: var(--secondary-color); font-size: 0.9rem;">
+                    <i class="fas fa-school"></i> Defence Forces Technical College (DEFTEC)
+                </p>
+                <p style="margin: 0.2rem 0 0 2rem; color: var(--primary-color); font-weight: 600; font-size: 1.1rem;">
+                    <i class="fas fa-laptop-code"></i> School of Information Technology for Defence Systems (SITDS)
+                </p>
+            </div>
+            <h1 style="color: var(--primary-color);">SITDS Notice Board</h1>
+            <p class="user-info" style="margin:0.5rem 0 0 0; color:#4a5568;">
+                Signed in as <strong>{{ user.get_full_name|default:user.username }}</strong>
+                &nbsp;•&nbsp;
+                <span class="role-label">{{ user.get_role_display }}</span>
+                {% if user_class %}
+                    &nbsp;•&nbsp;
+                    <span class="class-badge">Class: {{ user_class.name }}</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="actions" style="display: flex; gap: 1rem;">
+            <a href="{% url 'view_notices' %}" class="btn btn-primary">
+                <i class="fas fa-clipboard-list"></i> View Notices
+            </a>
+            <a href="{% url 'create_notice' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create New Notice
+            </a>
+            <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn" style="background-color: #EDF2F7; color: #4A5568;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Actions Section for All Users -->
+    <div class="quick-actions-grid" style="margin-bottom: 2rem;">
+        <div class="action-card">
+            <i class="fas fa-bullhorn" style="font-size: 2rem; color: #4299e1; margin-bottom: 1rem;"></i>
+            <h4 style="margin: 0.5rem 0;">View Notices</h4>
+            <p style="color: #718096; margin-bottom: 1rem;">View all notices relevant to you</p>
+            <a href="{% url 'view_notices' %}" class="btn btn-primary" style="width: 100%;">
+                <i class="fas fa-eye"></i> View All Notices
+            </a>
+        </div>
+        
+        <div class="action-card">
+            <i class="fas fa-plus-circle" style="font-size: 2rem; color: #48bb78; margin-bottom: 1rem;"></i>
+            <h4 style="margin: 0.5rem 0;">Create Notice</h4>
+            <p style="color: #718096; margin-bottom: 1rem;">Create a new notice</p>
+            <a href="{% url 'create_notice' %}" class="btn btn-primary" style="width: 100%; background-color: #48bb78;">
+                <i class="fas fa-plus"></i> Create New Notice
+            </a>
+        </div>
+    </div>
+
+    {% if user_role == 'CLASS_COMMANDER' %}
+    <div class="commander-panel">
+        {% if commanded_class %}
+            <div class="class-management">
+                <h3>Welcome, Commander of {{ commanded_class.name }}</h3>
+                
+                <!-- Quick Actions Grid -->
+                <div class="quick-actions-grid">
+                    <!-- View Notices Button -->
+                    <div class="action-card">
+                        <i class="fas fa-bullhorn" style="font-size: 2rem; color: #4299e1; margin-bottom: 1rem;"></i>
+                        <h4 style="margin: 0.5rem 0;">View Notices</h4>
+                        <p style="color: #718096; margin-bottom: 1rem;">View and manage notices for your class</p>
+                        <a href="{% url 'view_notices' %}" class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-eye"></i> View Notices
+                        </a>
+                    </div>
+
+                    <!-- Manage Class Button -->
+                    <div class="action-card">
+                        <i class="fas fa-users" style="font-size: 2rem; color: #48bb78; margin-bottom: 1rem;"></i>
+                        <h4 style="margin: 0.5rem 0;">Manage My Class</h4>
+                        <p style="color: #718096; margin-bottom: 1rem;">View and manage students in your class</p>
+                        <button onclick="toggleClassManagement()" class="btn btn-primary" style="width: 100%; background-color: #48bb78;">
+                            <i class="fas fa-user-cog"></i> Manage Class
+                        </button>
+                    </div>
+
+                    <!-- Register Student Button -->
+                    <div class="action-card">
+                        <i class="fas fa-user-plus" style="font-size: 2rem; color: #ed8936; margin-bottom: 1rem;"></i>
+                        <h4 style="margin: 0.5rem 0;">Register Student</h4>
+                        <p style="color: #718096; margin-bottom: 1rem;">Add new students to your class</p>
+                        <a href="{% url 'register_student' %}" class="btn btn-primary" style="width: 100%; background-color: #ed8936;">
+                            <i class="fas fa-user-plus"></i> Register New Student
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Class Management Section (Hidden by Default) -->
+                <div id="class-management-section" style="display: none; margin-top: 2rem;">
+                    <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h4 style="margin-top: 0; color: #2d3748; display: flex; align-items: center;">
+                            <i class="fas fa-users"></i>
+                            <span style="margin-left: 0.5rem;">Students in {{ commanded_class.name }}</span>
+                        </h4>
+                        
+                        <!-- Add Existing Student Form -->
+                        <div class="add-student-form" style="background: #f7fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                            <h5 style="margin-top: 0; color: #4a5568;">Add Existing Student</h5>
+                            <form method="post" action="{% url 'add_student_to_class' %}" class="student-form" style="display: flex; gap: 1rem; align-items: center;">
+                                {% csrf_token %}
+                                {{ student_form.student }}
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-user-plus"></i> Add Student
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Student List -->
+                        {% if class_students %}
+                        <div class="student-table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Photo</th>
+                                        <th>Student Name</th>
+                                        <th>Username</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in class_students %}
+                                    <tr>
+                                        <td>
+                                            {% if student.photo %}
+                                            <img src="{{ student.photo.url }}" alt="{{ student.user.username }}" style="width:48px; height:48px; border-radius:50%; object-fit:cover;" />
+                                            {% else %}
+                                            <div style="width:48px; height:48px; border-radius:50%; background:#e2e8f0; display:inline-block;
+                                                text-align:center; line-height:48px; color:#718096;">{{ student.user.username|slice:":1"|upper }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ student.user.get_full_name|default:student.user.username }}</td>
+                                        <td>{{ student.user.username }}</td>
+                                        <td>
+                                            {% if student.is_suspended %}
+                                                <span class="status-badge status-suspended">Suspended</span>
+                                            {% else %}
+                                                <span class="status-badge status-assigned">Active</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                                                <a href="{% url 'edit_student' student.id %}" class="btn" style="background:#edf2f7;color:#4a5568;padding:0.4rem 0.6rem;border-radius:6px;text-decoration:none;">
+                                                    <i class="fas fa-user-edit"></i>
+                                                </a>
+
+                                                <form method="post" action="{% url 'remove_student' student.id %}" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn" style="background:#fc8181;color:#fff;padding:0.4rem 0.6rem;border-radius:6px;border:none;" onclick="return confirm('Remove this student from your class?')">
+                                                        <i class="fas fa-user-minus"></i>
+                                                    </button>
+                                                </form>
+
+                                                {% if student.is_suspended %}
+                                                <form method="post" action="{% url 'reinstate_student' student.id %}" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn" style="background:#68d391;color:#fff;padding:0.4rem 0.6rem;border-radius:6px;border:none;">
+                                                        <i class="fas fa-user-check"></i>
+                                                    </button>
+                                                </form>
+                                                {% else %}
+                                                <button class="btn" style="background:#f6ad55;color:#fff;padding:0.4rem 0.6rem;border-radius:6px;border:none;" onclick="toggleSuspensionForm('{{ student.id }}')">
+                                                    <i class="fas fa-user-lock"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+
+                                            {% if not student.is_suspended %}
+                                            <div id="suspension-form-{{ student.id }}" style="display:none; margin-top:0.5rem;">
+                                                <form method="post" action="{% url 'suspend_student' student.id %}" style="display:flex; gap:0.5rem; align-items:center;">
+                                                    {% csrf_token %}
+                                                    <input type="text" name="reason" placeholder="Reason" required style="padding:0.4rem; border:1px solid #e2e8f0; border-radius:4px;">
+                                                    <button type="submit" class="btn" style="background:#f6ad55;color:#fff;padding:0.4rem 0.6rem;border-radius:6px;border:none;">Confirm</button>
+                                                </form>
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="no-students" style="text-align: center; color: #718096; padding: 2rem;">
+                            No students assigned to your class yet.
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="no-class-warning" style="text-align: center; padding: 2rem;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #ed8936; margin-bottom: 1rem;"></i>
+                <h4 style="margin: 0.5rem 0;">No Class Assigned</h4>
+                <p style="color: #718096;">You haven't been assigned to command any class yet. Please contact an administrator.</p>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} fade-out">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+</div>
+{% endblock %}

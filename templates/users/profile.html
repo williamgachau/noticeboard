@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load avatar_tags %}
+
+{% block content %}
+<div style="max-width:700px; margin:2rem auto; background:white; padding:1.5rem; border-radius:8px;">
+    <h2>Profile</h2>
+    <p><strong>{{ user.get_full_name|default:user.username }}</strong></p>
+    <div style="display:flex; gap:1rem; align-items:center;">
+        <img src="{{ request.user|avatar_url:96 }}" alt="avatar" style="width:96px; height:96px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.photo }}
+            <div style="margin-top:1rem;"><button class="btn btn-primary" type="submit">Upload</button></div>
+        </form>
+    </div>
+</div>
+{% endblock %}

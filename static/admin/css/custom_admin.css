@@ -1,0 +1,94 @@
+/* Custom Admin Styles */
+#header {
+    background: #2c3e50;
+    color: #fff;
+}
+
+.module h2, .module caption, .inline-group h2 {
+    background: #34495e;
+}
+
+div.breadcrumbs {
+    background: #3498db;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background: #2980b9;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background: #3498db;
+}
+
+.button.default, input[type=submit].default, .submit-row input.default {
+    background: #27ae60;
+}
+
+.button.default:hover, input[type=submit].default:hover {
+    background: #2ecc71;
+}
+
+/* Improve readability */
+#content-main {
+    max-width: 1200px;
+    margin: 20px auto;
+}
+
+/* Better form styling */
+.form-row {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-row label {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* List view improvements */
+#changelist-form .results {
+    width: 100%;
+}
+
+#changelist table thead th {
+    background: #34495e;
+    color: #fff;
+    padding: 8px;
+}
+
+#changelist table tbody td, #changelist table tbody th {
+    padding: 8px;
+}
+
+/* Filter styling */
+#changelist-filter h2 {
+    background: #2c3e50;
+    color: #fff;
+    padding: 10px 15px;
+    margin-bottom: 0;
+}
+
+#changelist-filter li.selected {
+    border-left: 5px solid #3498db;
+}
+
+/* Message styling */
+.success {
+    background: #27ae60;
+}
+
+/* Related widget wrapper improvements */
+.related-widget-wrapper {
+    float: none;
+    display: block;
+    margin-top: 5px;
+}
+
+/* Custom fieldset styling */
+.role-info {
+    background: #f9f9f9;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}

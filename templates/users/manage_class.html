@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .manage-class-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #eef2f7;
+    }
+
+    .section-title {
+        margin: 0;
+        color: #2d3748;
+        font-size: 2rem;
+    }
+
+    .student-table {
+        width: 100%;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .student-table th,
+    .student-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .student-table th {
+        background: #f7fafc;
+        font-weight: 600;
+        color: #4a5568;
+    }
+
+    .student-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .alert {
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 6px;
+    }
+
+    .alert-success {
+        background: #c6f6d5;
+        color: #2f855a;
+    }
+
+    .alert-error {
+        background: #fed7d7;
+        color: #c53030;
+    }
+
+    .student-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .status-active {
+        background: #c6f6d5;
+        color: #2f855a;
+    }
+
+    .status-suspended {
+        background: #fed7d7;
+        color: #c53030;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .btn-danger {
+        background: #fc8181;
+        color: white;
+    }
+
+    .btn-warning {
+        background: #f6ad55;
+        color: white;
+    }
+
+    .btn-success {
+        background: #68d391;
+        color: white;
+    }
+
+    .btn:hover {
+        filter: brightness(95%);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .suspension-form {
+        margin-top: 0.5rem;
+    }
+
+    .suspension-reason {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+    }
+
+    .suspension-info {
+        font-size: 0.875rem;
+        color: #718096;
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .student-table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="manage-class-container">
+    <div class="section-header">
+        <div>
+            <h1 class="section-title">Manage {{ commanded_class.name }}</h1>
+            <p style="margin:0.5rem 0 0 0; color:#4a5568;">
+                Manage your students and their permissions
+            </p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="btn" style="background-color: #EDF2F7; color: #4A5568;">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="messages" style="margin-bottom: 2rem;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if students %}
+    <div class="student-table-wrapper">
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Username</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.user.get_full_name|default:student.user.username }}</td>
+                    <td>{{ student.user.username }}</td>
+                    <td>
+                        {% if student.is_suspended %}
+                        <span class="student-status status-suspended">Suspended</span>
+                        {% else %}
+                        <span class="student-status status-active">Active</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'edit_student' student.id %}" class="btn" style="background:#edf2f7;color:#4a5568;">
+                                <i class="fas fa-user-edit"></i> Edit
+                            </a>
+                            <form method="post" action="{% url 'remove_student' student.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this student from your class?')">
+                                    <i class="fas fa-user-minus"></i> Remove
+                                </button>
+                            </form>
+                            
+                            {% if student.is_suspended %}
+                            <form method="post" action="{% url 'reinstate_student' student.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-user-check"></i> Reinstate
+                                </button>
+                            </form>
+                            {% else %}
+                            <button class="btn btn-warning" onclick="toggleSuspensionForm('{{ student.id }}')">
+                                <i class="fas fa-user-lock"></i> Suspend
+                            </button>
+                            {% endif %}
+                        </div>
+                        
+                        {% if not student.is_suspended %}
+                        <div id="suspension-form-{{ student.id }}" class="suspension-form" style="display: none;">
+                            <form method="post" action="{% url 'suspend_student' student.id %}">
+                                {% csrf_token %}
+                                <textarea name="reason" class="suspension-reason" placeholder="Enter reason for suspension" required></textarea>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-check"></i> Confirm Suspension
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                        
+                        {% if student.is_suspended %}
+                        <div class="suspension-info">
+                            Suspended by: {{ student.suspended_by.get_full_name|default:student.suspended_by.username }}<br>
+                            Date: {{ student.suspended_at|date:"F j, Y, g:i a" }}<br>
+                            Reason: {{ student.suspension_reason }}
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; background: #f7fafc; border-radius: 10px; color: #718096;">
+        <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+        <p>No students in your class yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleSuspensionForm(studentId) {
+    const formId = `suspension-form-${studentId}`;
+    const form = document.getElementById(formId);
+    if (!form) return;
+    // If the form is currently hidden, confirm before showing (suspension action)
+    if (form.style.display === 'none' || form.style.display === '') {
+        if (!confirm('Are you sure you want to suspend this student from creating notices?')) return;
+        form.style.display = 'block';
+    } else {
+        // If visible, hide without confirmation
+        form.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

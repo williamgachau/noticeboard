@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .author-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .author-photo {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e2e8f0;
+    }
+
+    .author-name {
+        color: #2d3748;
+        font-weight: 500;
+    }
+
+    .notices-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .notices-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #eef2f7;
+    }
+
+    .header-main h1 {
+        margin: 0;
+        color: #2d3748;
+        font-size: 2rem;
+    }
+
+    .notices-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .notice-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .notice-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .notice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .notice-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #2d3748;
+    }
+
+    .notice-content {
+        color: #4a5568;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    .notice-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        color: #718096;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .notice-meta i {
+        margin-right: 0.5rem;
+    }
+
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .badge-public {
+        background: #c6f6d5;
+        color: #2f855a;
+    }
+
+    .badge-class {
+        background: #bee3f8;
+        color: #2b6cb0;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+        background: #4299e1;
+        color: white;
+    }
+
+    .btn-edit {
+        background: #edf2f7;
+        color: #4a5568;
+    }
+
+    .btn-delete {
+        background: #fed7d7;
+        color: #c53030;
+    }
+
+    .btn:hover {
+        filter: brightness(95%);
+    }
+
+    .attachment-link {
+        color: #4299e1;
+        text-decoration: none;
+    }
+
+    .attachment-link:hover {
+        text-decoration: underline;
+    }
+
+    .no-notices {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem;
+        background: #f7fafc;
+        border-radius: 10px;
+        color: #718096;
+    }
+
+    .no-notices i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #a0aec0;
+    }
+
+    .section-header {
+        margin: 2rem 0 1rem;
+        border-bottom: 2px solid #eef2f7;
+        padding-bottom: 0.5rem;
+    }
+
+    .section-header h2 {
+        color: #2d3748;
+        font-size: 1.5rem;
+        margin: 0;
+    }
+
+    .notice-views {
+        background: #f7fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .views-title {
+        font-size: 1rem;
+        color: #4a5568;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .recent-viewers ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .recent-viewers li {
+        font-size: 0.9rem;
+        color: #718096;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .no-views {
+        color: #a0aec0;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .notices-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .notices-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notices-container">
+    <div class="notices-header">
+        <div class="header-main">
+            <h1>Notices</h1>
+            <p class="user-info" style="margin:0.5rem 0 0 0; color:#4a5568;">
+                Viewing as: <strong>{{ user.get_full_name|default:user.username }}</strong>
+                {% if user_class %}
+                    &nbsp;•&nbsp;
+                    <span class="class-badge">Class: {{ user_class.name }}</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="actions" style="display: flex; gap: 1rem;">
+            {% if not is_suspended %}
+            <a href="{% url 'create_notice' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create New Notice
+            </a>
+            {% else %}
+            <button class="btn" style="background:#fed7d7;color:#c53030;cursor:default;">Suspended: cannot create notices</button>
+            {% endif %}
+            <a href="{% url 'dashboard' %}" class="btn" style="background-color: #EDF2F7; color: #4A5568;">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    {% if authored_notices %}
+    <div class="section-header">
+        <h2>Your Notices</h2>
+    </div>
+    <div class="notices-grid mb-5">
+        {% for notice in authored_notices %}
+        <div class="notice-card">
+        <div class="notice-header">
+            <h2><a href="{% url 'notice_detail' notice.pk %}" style="color:inherit; text-decoration:none;">{{ notice.title }}</a></h2>
+                {% if notice.is_public %}
+                    <span class="badge badge-public">Public</span>
+                {% else %}
+                    <span class="badge badge-class">Class Only</span>
+                {% endif %}
+            </div>
+            <div class="notice-content">{{ notice.content }}</div>
+            <div class="notice-meta">
+                <div class="date">
+                    <i class="fas fa-clock"></i>
+                    {{ notice.created_at|date:"F j, Y, g:i a" }}
+                </div>
+                {% if notice.attachment %}
+                <div class="attachment">
+                    <i class="fas fa-paperclip"></i>
+                    <a href="{{ notice.attachment.url }}" target="_blank" class="attachment-link">
+                        {{ notice.attachment_name|default:"Download Attachment" }}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <!-- Comments -->
+            <div class="notice-comments" style="margin-top:1rem;">
+                <h4 style="margin:0 0 0.5rem 0; font-size:1rem; color:#2d3748;">Comments ({{ notice.comments.count }})</h4>
+                <div class="comments-list" style="max-height:8rem; overflow:auto; background:#fbfdff; padding:0.75rem; border-radius:6px;">
+                    {% for comment in notice.comments.all %}
+                        {% if not comment.parent and not comment.is_hidden %}
+                        <div class="comment-item" style="margin-bottom:0.5rem;">
+                            <strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong>
+                            <span style="color:#718096; font-size:0.85rem;"> &middot; {{ comment.created_at|timesince }} ago</span>
+                            <div style="color:#4a5568; margin-top:0.25rem;">{{ comment.content }}</div>
+                            {% for reply in comment.children.all %}
+                                {% if not reply.is_hidden %}
+                                <div style="margin-left:0.75rem; color:#4a5568; margin-top:0.25rem;">↳ {{ reply.author.get_full_name|default:reply.author.username }}: {{ reply.content }}</div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    {% empty %}
+                    <div style="color:#a0aec0;">No comments yet.</div>
+                    {% endfor %}
+                </div>
+
+                {% if user.is_authenticated %}
+                {% if not is_suspended %}
+                <form method="post" action="{% url 'post_comment' notice.pk %}" style="margin-top:0.75rem; display:flex; gap:0.5rem; align-items:flex-start;">
+                    {% csrf_token %}
+                    {{ comment_form.content }}
+                    <button type="submit" class="btn btn-primary" style="height:38px; margin-top:4px;">Post</button>
+                </form>
+                {% else %}
+                <div style="margin-top:0.5rem; color:#c53030; font-weight:600;">You are suspended and cannot post comments or notices.</div>
+                {% endif %}
+                {% else %}
+                <div style="margin-top:0.5rem; color:#718096;">Please <a href="{% url 'login' %}">log in</a> to comment.</div>
+                {% endif %}
+            </div>
+            <!-- Views Information -->
+            <div class="notice-views">
+                <h3 class="views-title">Views ({{ notice.view_count }})</h3>
+                {% if notice.recent_viewers %}
+                <div class="recent-viewers">
+                    <ul>
+                        {% for view in notice.recent_viewers %}
+                        <li>
+                            <i class="fas fa-eye"></i>
+                            {{ view.viewer.username }} - {{ view.viewed_at|timesince }} ago
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% else %}
+                <p class="no-views">No views yet</p>
+                {% endif %}
+            </div>
+            <div class="notice-actions" style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                <a href="{% url 'edit_notice' notice.pk %}" class="btn btn-edit">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'delete_notice' notice.pk %}" class="btn btn-delete">
+                    <i class="fas fa-trash"></i> Delete
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="section-header">
+        <h2>All Notices</h2>
+    </div>
+    <div class="notices-grid">
+        {% for notice in notices %}
+        <div class="notice-card">
+                <div class="notice-header">
+                <h2><a href="{% url 'notice_detail' notice.pk %}" style="color:inherit; text-decoration:none;">{{ notice.title }}</a></h2>
+                {% if notice.is_public %}
+                    <span class="badge badge-public">Public</span>
+                {% else %}
+                    <span class="badge badge-class">Class Only</span>
+                {% endif %}
+            </div>
+            <div class="notice-content">{{ notice.content }}</div>
+            <div class="author-info">
+                {% if notice.author_photo_url %}
+                    <img src="{{ notice.author_photo_url }}" alt="{{ notice.author.username }}'s photo" class="author-photo">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.svg' %}" alt="default avatar" class="author-photo">
+                {% endif %}
+                <span class="author-name">{{ notice.author.get_full_name|default:notice.author.username }}</span>
+            </div>
+            <div class="notice-meta">
+                <div class="date">
+                    <i class="fas fa-clock"></i>
+                    {{ notice.created_at|date:"F j, Y, g:i a" }}
+                </div>
+                {% if notice.attachment %}
+                <div class="attachment">
+                    <i class="fas fa-paperclip"></i>
+                    <a href="{{ notice.attachment.url }}" target="_blank" class="attachment-link">
+                        {{ notice.attachment_name|default:"Download Attachment" }}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <!-- Comments -->
+            <div class="notice-comments" style="margin-top:1rem;">
+                <h4 style="margin:0 0 0.5rem 0; font-size:1rem; color:#2d3748;">Comments ({{ notice.comments.count }})</h4>
+                <div class="comments-list" style="max-height:8rem; overflow:auto; background:#fbfdff; padding:0.75rem; border-radius:6px;">
+                    {% for comment in notice.comments.all|slice:"-3:" %}
+                    <div class="comment-item" style="margin-bottom:0.5rem;">
+                        <strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong>
+                        <span style="color:#718096; font-size:0.85rem;"> &middot; {{ comment.created_at|timesince }} ago</span>
+                        <div style="color:#4a5568; margin-top:0.25rem;">{{ comment.content }}</div>
+                    </div>
+                    {% empty %}
+                    <div style="color:#a0aec0;">No comments yet.</div>
+                    {% endfor %}
+                </div>
+
+                {% if user.is_authenticated %}
+                    {% if not is_suspended %}
+                    <form method="post" action="{% url 'post_comment' notice.pk %}" style="margin-top:0.75rem; display:flex; gap:0.5rem; align-items:flex-start;">
+                        {% csrf_token %}
+                        {{ comment_form.content }}
+                        <button type="submit" class="btn btn-primary" style="height:38px; margin-top:4px;">Post</button>
+                    </form>
+                    {% else %}
+                    <div style="margin-top:0.5rem; color:#c53030; font-weight:600;">You are suspended and cannot post comments or notices.</div>
+                    {% endif %}
+                {% else %}
+                <div style="margin-top:0.5rem; color:#718096;">Please <a href="{% url 'login' %}">log in</a> to comment.</div>
+                {% endif %}
+            </div>
+
+            {% if user == notice.author %}
+            <div class="notice-actions" style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                <a href="{% url 'edit_notice' notice.pk %}" class="btn btn-edit">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'delete_notice' notice.pk %}" class="btn btn-delete">
+                    <i class="fas fa-trash"></i> Delete
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="no-notices">
+            <i class="fas fa-inbox"></i>
+            <p>No notices available at the moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    (function(){
+        try{
+            const DEFAULT_AVATAR = "{% static 'images/default-avatar.svg' %}";
+            document.querySelectorAll('.author-photo').forEach(function(img){
+                img.addEventListener('error', function(){
+                    if (img.src !== DEFAULT_AVATAR) img.src = DEFAULT_AVATAR;
+                });
+            });
+        }catch(e){/* noop */}
+    })();
+</script>
+{% endblock %}

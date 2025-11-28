@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(rgba(0, 51, 102, 0.95), rgba(0, 51, 102, 0.95));
+        color: white;
+        padding: 4rem 0;
+        text-align: center;
+    }
+
+    .features-section {
+        padding: 4rem 0;
+        background: #f8fafc;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stats-section {
+        background: white;
+        padding: 4rem 0;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    .login-section {
+        padding: 4rem 0;
+        background: #f8fafc;
+    }
+
+    .institution-card {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-military {
+        background: #003366;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: background 0.3s ease;
+    }
+
+    .btn-military:hover {
+        background: #004080;
+    }
+
+    .mission-vision {
+        padding: 2rem;
+        background: white;
+        border-radius: 8px;
+        margin-top: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="text-center mb-5">
+                <h1>Welcome to SITDS Notice Board</h1>
+                <p class="lead">Your centralized platform for school information and notices</p>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="card-title">About Our School</h3>
+                            <p class="card-text">
+                                The School of Information Technology and Digital Studies (SITDS) 
+                                is committed to providing quality education in technology and digital fields.
+                                Our notice board system helps keep our community informed and connected.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="card-title">Access Portal</h3>
+                            <p class="card-text">
+                                Already have an account? Login to access:
+                                <ul>
+                                    <li>School notices and announcements</li>
+                                    <li>Class-specific information</li>
+                                    <li>Important updates</li>
+                                </ul>
+                            </p>
+                            <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

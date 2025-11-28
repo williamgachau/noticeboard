@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="max-width:900px; margin:2rem auto;">
+    <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.04);">
+        <h1 style="margin-top:0;">{{ notice.title }}</h1>
+        <div style="color:#718096; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+            {% if student_photo %}
+                <img src="{{ student_photo }}" alt="{{ notice.author.username }}'s photo" style="width:40px; height:40px; object-fit:cover; border-radius:50%; border:2px solid #e2e8f0;">
+            {% else %}
+                <img src="{% static 'images/default-avatar.svg' %}" alt="default avatar" style="width:40px; height:40px; object-fit:cover; border-radius:50%; border:2px solid #e2e8f0;">
+            {% endif %}
+            <strong>{{ notice.author.get_full_name|default:notice.author.username }}</strong>
+            &nbsp;•&nbsp; {{ notice.created_at|date:"F j, Y, g:i a" }}
+            &nbsp;•&nbsp; Views: {{ notice.view_count }}
+        </div>
+
+        <div style="color:#4a5568; line-height:1.6; margin-bottom:1rem;">{{ notice.content|linebreaksbr }}</div>
+
+        {% if notice.attachment %}
+        <div style="margin-bottom:1rem;">
+            <a href="{{ notice.attachment.url }}" target="_blank">{{ notice.attachment_name|default:'Download Attachment' }}</a>
+        </div>
+        {% endif %}
+
+        <hr />
+
+        <h3 style="margin:0 0 0.5rem 0;">Comments ({{ notice.comments.count }})</h3>
+        <div style="margin-bottom:1rem;">
+            {% if notice.comments.exists %}
+                {% for comment in notice.comments.all %}
+                    {% if not comment.parent and not comment.is_hidden %}
+                    <div style="padding:0.5rem 0; border-bottom:1px solid #f1f5f9;">
+                        <strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong>
+                        <span style="color:#718096; font-size:0.9rem;"> &middot; {{ comment.created_at|timesince }} ago</span>
+                        <div style="margin-top:0.25rem; color:#4a5568;">{{ comment.content }}</div>
+
+                        <!-- moderation -->
+                        {% if user.role == 'ADMIN' or user == notice.author %}
+                        <form method="post" action="{% url 'toggle_comment_visibility' comment.pk %}" style="display:inline; margin-top:0.25rem;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm" style="background:#edf2f7;">{% if comment.is_hidden %}Unhide{% else %}Hide{% endif %}</button>
+                        </form>
+                        {% endif %}
+
+                        <!-- replies -->
+                        {% for reply in comment.children.all %}
+                            {% if not reply.is_hidden %}
+                            <div style="margin-left:1rem; padding:0.5rem; background:#fbfdff; border-radius:6px; margin-top:0.5rem;">
+                                <strong>{{ reply.author.get_full_name|default:reply.author.username }}</strong>
+                                <span style="color:#718096; font-size:0.85rem;"> &middot; {{ reply.created_at|timesince }} ago</span>
+                                <div style="margin-top:0.25rem; color:#4a5568;">{{ reply.content }}</div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- reply form (toggle using details element) -->
+                        {% if user.is_authenticated %}
+                        <details style="margin-top:0.5rem;">
+                            <summary style="cursor:pointer; color:#4299e1;">Reply</summary>
+                                {% if not is_suspended %}
+                                <form method="post" action="{% url 'post_comment' notice.pk %}" style="margin-top:0.5rem;">
+                                    {% csrf_token %}
+                                    {{ comment_form.content }}
+                                    <input type="hidden" name="parent_id" value="{{ comment.pk }}" />
+                                    <div style="margin-top:0.5rem;"><button type="submit" class="btn btn-primary">Post Reply</button></div>
+                                </form>
+                                {% else %}
+                                <div style="margin-top:0.5rem; color:#c53030; font-weight:600;">You are suspended and cannot post comments or notices.</div>
+                                {% endif %}
+                        </details>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div style="color:#a0aec0;">No comments yet.</div>
+            {% endif %}
+        </div>
+
+        {% if user.is_authenticated %}
+            {% if not is_suspended %}
+            <form method="post" action="{% url 'post_comment' notice.pk %}">
+                {% csrf_token %}
+                {{ comment_form.content }}
+                <div style="margin-top:0.5rem;">
+                    <button type="submit" class="btn btn-primary">Post Comment</button>
+                    <a href="{% url 'view_notices' %}" class="btn" style="margin-left:0.5rem;">Back to notices</a>
+                </div>
+            </form>
+            {% else %}
+            <div style="margin-top:0.5rem; color:#c53030; font-weight:600;">You are suspended and cannot post comments or notices.</div>
+            {% endif %}
+        {% else %}
+        <div>Please <a href="{% url 'login' %}">log in</a> to comment.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    (function(){
+        try{
+            const DEFAULT_AVATAR = "{% static 'images/default-avatar.svg' %}";
+            document.querySelectorAll('.author-photo').forEach(function(img){
+                img.addEventListener('error', function(){
+                    if (img.src !== DEFAULT_AVATAR) img.src = DEFAULT_AVATAR;
+                });
+            });
+        }catch(e){/* noop */}
+    })();
+</script>
+{% endblock %}

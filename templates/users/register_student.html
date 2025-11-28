@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .registration-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-title {
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        font-size: 1.75rem;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #4a5568;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #4299e1;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    }
+
+    .help-text {
+        font-size: 0.875rem;
+        color: #718096;
+        margin-top: 0.25rem;
+    }
+
+    .errorlist {
+        color: #e53e3e;
+        font-size: 0.875rem;
+        list-style: none;
+        padding: 0;
+        margin: 0.25rem 0;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 0.75rem;
+        background: #4299e1;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .btn-submit:hover {
+        background: #3182ce;
+    }
+
+    .btn-back {
+        display: inline-block;
+        margin-top: 1rem;
+        color: #4a5568;
+        text-decoration: none;
+        font-size: 0.875rem;
+    }
+
+    .btn-back:hover {
+        color: #2d3748;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="registration-container">
+    <h2 class="form-title">Register New Student</h2>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+            <div class="help-text">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+            <ul class="errorlist">
+                {% for error in field.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn-submit">Register Student</button>
+    </form>
+    
+    <a href="{% url 'dashboard' %}" class="btn-back">← Back to Dashboard</a>
+</div>
+{% endblock %}

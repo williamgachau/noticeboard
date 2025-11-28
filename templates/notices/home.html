@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+.container {
+    max-width: 1000px;
+    margin: 3rem auto;
+    padding: 2rem;
+}
+.header-card {
+    background: #003366;
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1.5rem;
+}
+.info-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.login-card {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.login-card form input[type="text"],
+.login-card form input[type="password"] {
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+}
+.login-card form button {
+    background: #003366;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header-card">
+        <h1>{{ school.school }}</h1>
+        <p style="margin: 0.3rem 0 0 0; font-weight: 500;">{{ school.college }} • {{ school.university }}</p>
+        <p style="margin: 0.5rem 0 0 0; color: #ffd700;">{{ school.tagline }}</p>
+    </div>
+
+    <div class="content-grid">
+        <div class="info-card">
+            <h2>About SITDS</h2>
+            <p>The School of Information Technology for Defence Systems (SITDS) at Defence Forces Technical College (DEFTEC), National Defence University - Kenya, is responsible for delivering high-quality education and training in information technology for defence applications. We prepare officers and technical personnel to design, deploy, and maintain secure and resilient IT systems for national defence.</p>
+
+            <h3>Mission</h3>
+            <p>To equip students with practical and theoretical knowledge to support defence IT systems and innovations.</p>
+
+            <h3>Key Contacts</h3>
+            <ul>
+                <li>Senior Instructor: admin@sitds.local</li>
+                <li>Adjutant: adjutant@sitds.local</li>
+                <li>School Sergeant Major: ssm@sitds.local</li>
+            </ul>
+
+            <h3>How to use the Notice Board</h3>
+            <ol>
+                <li>Admins register staff accounts (Senior Instructor, Adjutant, School Sergeant Major).</li>
+                <li>Class Commanders manage students and class notices.</li>
+                <li>Students view notices targeted to their class or public notices.</li>
+            </ol>
+        </div>
+
+        <aside class="login-card">
+            <h3>Login</h3>
+            <form method="post" action="">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <label for="id_username">Username</label>
+                {{ form.username }}
+                <label for="id_password">Password</label>
+                {{ form.password }}
+                <button type="submit">Sign in</button>
+            </form>
+            <p style="margin-top: 0.8rem; font-size: 0.9rem; color: #718096;">If you don't have an account contact the administrator.</p>
+        </aside>
+    </div>
+</div>
+{% endblock %}
